@@ -1,0 +1,8 @@
+folium
+branca
+streamlit
+streamlit-folium
+streamlit-autorefresh
+pandas
+matplotlib
+seaborn

@@ -1,0 +1,20 @@
+def fill_in_missing_relative_humidity(gun):
+    if gun["relative_humidity"].isnull().all():
+        target_date = gun["datetime"].dt.date.iloc[0]
+        nearby_days = weather_df_copy[
+            (weather_df_copy["datetime"].dt.date >= target_date - pd.Timedelta(days=5)) &
+            (weather_df_copy["datetime"].dt.date <= target_date + pd.Timedelta(days=5))
+        ]
+        mean_hourly = nearby_days.groupby(nearby_days["datetime"].dt.hour)["relative_humidity"].mean()
+        gun["relative_humidity"] = gun["relative_humidity"].dt.hour.map(mean_hourly)
+    elif gun["relative_humidity"].isnull().any():
+        target_date = gun["datetime"].dt.date.iloc[0]
+        nearby_days = weather_df_copy[
+            (weather_df_copy["datetime"].dt.date >= target_date - pd.Timedelta(days=5)) &
+            (weather_df_copy["datetime"].dt.date <= target_date + pd.Timedelta(days=5))
+        ]
+        mean_hourly = nearby_days.groupby(nearby_days["datetime"].dt.hour)["relative_humidity"].mean()
+        gun["relative_humidity"] = gun.apply(lambda row: mean_hourly[row["datetime"].hour] if pd.isnull(row["relative_humidity"])
+                                             else row["relative_humidity"], axis=1)
+    return gun
+weather_df_copy = weather_df_copy.groupby(weather_df_copy["datetime"].dt.date).apply(fill_in_missing_apparent)
